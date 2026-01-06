@@ -12,7 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^2.2.1",
+    "bullmq": "^5.66.4",
+    "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "ioredis": "^5.8.2",
     "mongo": "^0.1.0",
     "mongoose": "^9.1.1"
   }
