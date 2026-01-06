@@ -1,6 +1,6 @@
-const Redis = require('ioredis');
+const { Redis } = require('ioredis');
 
-// Configuration using environment variables
+// Configuration using environment variables with working fallbacks
 const redis = new Redis({
     host: process.env.REDIS_HOST || 'localhost',
     port: process.env.REDIS_PORT || 6379,

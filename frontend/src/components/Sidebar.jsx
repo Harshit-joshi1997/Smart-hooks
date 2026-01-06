@@ -1,6 +1,19 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
 
 const Sidebar = ({ onViewChange, currentView }) => {
+    const navigate = useNavigate();
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userInitials = user.fullName
+        ? user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()
+        : 'G';
+
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        navigate('/login');
+    };
+
     return (
         <aside className="sidebar">
             <div className="sidebar-header">
@@ -34,11 +47,38 @@ const Sidebar = ({ onViewChange, currentView }) => {
             </nav>
             <div className="sidebar-footer">
                 <div className="user-info">
-                    <div className="avatar">JD</div>
-                    <div>
-                        <p className="user-name">John Doe</p>
-                        <p className="user-role">Admin</p>
+                    <div className="avatar" title={user.fullName}>{userInitials}</div>
+                    <div style={{ flex: 1 }}>
+                        <p className="user-name">{user.fullName || 'Guest User'}</p>
+                        <p className="user-role">{user.email || 'No Email'}</p>
                     </div>
+                    <button
+                        onClick={handleLogout}
+                        className="logout-btn"
+                        title="Sign Out"
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--text-muted)',
+                            cursor: 'pointer',
+                            padding: '0.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '0.375rem',
+                            transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.color = 'var(--error)';
+                            e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.color = 'var(--text-muted)';
+                            e.target.style.backgroundColor = 'transparent';
+                        }}
+                    >
+                        <LogOut size={18} />
+                    </button>
                 </div>
             </div>
         </aside>
