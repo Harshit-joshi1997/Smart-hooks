@@ -7,13 +7,38 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // Simulate login
-        if (email && password) {
-            navigate('/home');
+        setError('');
+        setIsLoading(true);
+
+        try {
+            const response = await fetch('http://localhost:5000/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log("successful login");
+                localStorage.setItem('user', JSON.stringify(data.user));
+                navigate('/home');
+            } else {
+                setError(data.error || 'Invalid credentials');
+            }
+        } catch (err) {
+            console.error('Login error:', err);
+            setError('Unable to connect to server. Please check your connection.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -22,6 +47,21 @@ const Login = () => {
             <div className="login-card">
                 <h1 className="login-title">Welcome Back</h1>
                 <p className="login-subtitle">Please sign in to your account</p>
+
+                {error && (
+                    <div className="error-message" style={{
+                        backgroundColor: '#fee2e2',
+                        border: '1px solid #ef4444',
+                        color: '#b91c1c',
+                        padding: '0.75rem',
+                        borderRadius: '0.375rem',
+                        marginBottom: '1rem',
+                        fontSize: '0.875rem'
+                    }}>
+                        {error}
+                    </div>
+                )}
+
                 <form onSubmit={handleLogin} className="login-form">
                     <div className="form-group">
                         <label htmlFor="email">Email Address</label>
@@ -32,6 +72,7 @@ const Login = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            disabled={isLoading}
                         />
                     </div>
                     <div className="form-group">
@@ -44,6 +85,7 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
+                                disabled={isLoading}
                             />
                             <button
                                 type="button"
@@ -55,7 +97,9 @@ const Login = () => {
                             </button>
                         </div>
                     </div>
-                    <button type="submit" className="btn-primary">Sign In</button>
+                    <button type="submit" className="btn-primary" disabled={isLoading}>
+                        {isLoading ? 'Signing In...' : 'Sign In'}
+                    </button>
                     <div style={{ marginTop: '1.5rem', textAlign: 'center', borderTop: '1px solid #eee', paddingTop: '1rem' }}>
                         <span style={{ color: '#666', fontSize: '0.9rem' }}>Don't have an account? </span>
                         <Link to="/create-user" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500 }}>Create Account</Link>

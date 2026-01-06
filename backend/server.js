@@ -55,6 +55,41 @@ app.post('/create-user', async (req, res) => {
     }
 });
 
+// Login Endpoint
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    try {
+        const userJson = await redis.get(`user:${email}`);
+
+        if (!userJson) {
+            return res.status(401).json({ error: 'Invalid email or password' });
+        }
+
+        const user = JSON.parse(userJson);
+
+        // Simple password comparison (In production, use bcrypt!)
+        if (user.password !== password) {
+            return res.status(401).json({ error: 'Invalid email or password' });
+        }
+
+        res.status(200).json({
+            message: 'Login successful',
+            user: {
+                email: user.email,
+                fullName: user.fullName
+            }
+        });
+    } catch (error) {
+        console.error('Error logging in:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // Webhook Endpoint
 app.post('/webhook', (req, res) => {
     console.log('Webhook Event Received:', req.body);
