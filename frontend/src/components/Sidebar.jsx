@@ -38,6 +38,9 @@ const Sidebar = ({ onViewChange, currentView }) => {
                             <li className={currentView === 'ai-chatbox' ? 'active' : ''}>
                                 <a href="#" onClick={(e) => { e.preventDefault(); onViewChange('ai-chatbox'); }}>AI Chatbox</a>
                             </li>
+                            <li className={currentView === 'orders' ? 'active' : ''}>
+                                <a href="#" onClick={(e) => { e.preventDefault(); onViewChange('orders'); }}>My Orders</a>
+                            </li>
                         </ul>
                     </li>
 

@@ -11,12 +11,8 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 
 // CORS Middleware
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    next();
-});
+const cors = require('cors');
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.send('Backend server is running!');
@@ -86,6 +82,63 @@ app.post('/login', async (req, res) => {
         });
     } catch (error) {
         console.error('Error logging in:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Email Service
+const { sendOrderConfirmation } = require('./emailService');
+
+// Create Order Endpoint
+app.post('/create-order', async (req, res) => {
+    const { email, itemName, price, quantity, total } = req.body;
+
+    if (!email || !itemName || !price || !quantity || !total) {
+        return res.status(400).json({ error: 'Missing order details' });
+    }
+
+    try {
+        const orderId = Date.now().toString();
+        const orderData = {
+            id: orderId,
+            email,
+            itemName,
+            price,
+            quantity,
+            total,
+            status: 'Paid',
+            date: new Date().toISOString()
+        };
+
+        // Save order to Redis List (users specific orders)
+        await redis.lpush(`orders:${email}`, JSON.stringify(orderData));
+
+        // Send Confirmation Email
+        await sendOrderConfirmation(email, orderData);
+
+        res.status(201).json({ message: 'Order placed successfully', order: orderData });
+    } catch (error) {
+        console.error('Error listing orders:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Get Orders Endpoint
+app.get('/orders', async (req, res) => {
+    const { email } = req.query;
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email required' });
+    }
+
+    try {
+        // Fetch all orders from Redis List
+        const ordersRaw = await redis.lrange(`orders:${email}`, 0, -1);
+        const orders = ordersRaw.map(o => JSON.parse(o));
+
+        res.status(200).json(orders);
+    } catch (error) {
+        console.error('Error fetching orders:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

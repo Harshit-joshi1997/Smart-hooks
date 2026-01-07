@@ -3,7 +3,9 @@ import Sidebar from './Sidebar';
 import Dashboard from './Dashboard';
 import Products from './Products';
 import Webhooks from './Webhooks';
+
 import AIChatbox from './AIChatbox';
+import Orders from './Orders';
 
 const Home = () => {
     const [currentView, setCurrentView] = useState('dashboard');
@@ -18,6 +20,8 @@ const Home = () => {
                 return <Products />;
             case 'ai-chatbox':
                 return <AIChatbox />;
+            case 'orders':
+                return <Orders />;
             default:
                 return <Dashboard />;
         }
